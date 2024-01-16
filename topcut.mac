@@ -1,0 +1,114 @@
+!START MACRO
+
+!ONERR GOTO ERR 
+
+!SCROFF 
+
+-- Макрос урезки ураганных содержаний индивидуально по рудным телам
+-- Версия от 01.01.1833
+-- Автор - Башмачкин Акакий Акакиевич akak@bashm.ru
+
+-- Входной файл скважин
+!LET $hol_in# = hol_sel_
+
+-- Поле зонального контроля
+!LET $zone_fld# = OB_FULL
+
+-- Список уровней урезки
+!LET $topcut_list# = topcut_au
+
+-- Урезаемый компонент в $hol_in#
+!LET $cttng_elem# = AU
+
+-- Префикс уровня урезки в $topcut_list#
+!LET $tpct_lvl_pr# = UR_
+
+-- Окончание поля урезанных содержаний в выходном файле
+-- (Финальное поле урезанных содержаний в выходном файле формируется 
+-- по правилу: $cttng_elem#$tpct_res_pst#)
+!LET $tpct_res_pst# = _UR
+
+-- Выходной файл скважин
+!LET $hol_ou# = hol_test
+
+=========================================================================
+-- Настройки закончены, ниже ничего не трогать без согласования с автором
+=========================================================================
+
+
+
+-- Включение/выключение отладки
+!LET $DEBUG# = 0
+
+-- 1. Оставляем в файле урезки только необходимые поля
+
+!LET $debugging_step# = 1
+
+!EXTRA    &IN($topcut_list#),
+          &OUT(topcut_mac_tmp),
+          @APPROX=0.0
+
+ saveonly($zone_fld#,$tpct_lvl_pr#$cttng_elem#)
+
+GO 
+
+-- 2. Объединяем файл скважин и файл уровней урезки
+
+!LET $debugging_step# = 2
+
+!JOIN     &IN1($hol_in#),
+          &IN2(topcut_mac_tmp),
+          &OUT(hol_mac_tmp),
+          *KEY1($zone_fld#),
+          @SUBSETR=0.0,
+          @SUBSETF=0.0,
+          @CARTJOIN=0.0
+
+-- 3. Удаляем временный файл уровней урезки
+
+!LET $debugging_step# = 3
+
+!IF $DEBUG#=0,THEN 
+
+ !DELETE   &IN(topcut_mac_tmp),
+           @CONFIRM=0.0
+
+!ENDIF 
+
+-- 4. Режем ураганы в соответствии с уровнями урезки
+
+!LET $debugging_step# = 4
+
+!EXTRA    &IN(hol_mac_tmp),
+          &OUT($hol_ou#),
+          @APPROX=0.0
+ $cttng_elem#$tpct_res_pst# = min($cttng_elem#,$tpct_lvl_pr#$cttng_elem#)
+
+GO 
+
+-- 5. Удаляем временный файл скважин
+
+!LET $debugging_step# = 5
+
+!IF $DEBUG# = 0,THEN 
+
+ !DELETE   &IN(hol_mac_tmp),
+           @CONFIRM=0.0
+
+!ENDIF 
+
+!SCRON 
+
+!GOTO SUCSESS 
+
+!ERR:ECHO !!!ERROR!!!
+
+!VARSAVE debug.var
+
+!GOTO FIN
+
+!SUCSESS:ECHO Work finished succsessfully
+
+!FIN:REM 
+
+!END 

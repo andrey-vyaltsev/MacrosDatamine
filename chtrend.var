@@ -1,0 +1,18 @@
+STACK V3.40                                                                     
+  8
+$hol_in#        
+holes                                                                           
+$wrk_field#     
+AU                                                                              
+$cog_start#     
+0.5                                                                             
+$cog_end#       
+3                                                                               
+$cog_step#      
+0.5                                                                             
+$m_ore_start#   
+1                                                                               
+$m_ore_end#     
+10                                                                              
+$m_ore_step#    
+1                                                                               
